@@ -1,4 +1,7 @@
-// Antarctic Digital Twin - Centralized Authentication & RBAC Service
+
+import { apiFetch } from '../api.js';
+
+const SESSION_KEY = 'ao_user_session';
 
 export class AuthService {
   constructor() {
@@ -7,164 +10,283 @@ export class AuthService {
     this.isAuthenticated = false;
     this.subscribers = [];
 
-    // Route Permissions Configuration
     this.routePermissions = {
-      // General Common Routes
-      dashboard: { roles: ['ADMIN', 'EMPLOYEE'], depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'LOGISTICS', 'ENVIRONMENT', 'RESEARCH', 'MEDICAL', 'COMMUNICATION', 'OPERATIONS'] },
-      help: { roles: ['ADMIN', 'EMPLOYEE'], depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'LOGISTICS', 'ENVIRONMENT', 'RESEARCH', 'MEDICAL', 'COMMUNICATION', 'OPERATIONS'] },
-      settings: { roles: ['ADMIN', 'EMPLOYEE'], depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'LOGISTICS', 'ENVIRONMENT', 'RESEARCH', 'MEDICAL', 'COMMUNICATION', 'OPERATIONS'] },
+      dashboard: {
+        roles: ['ADMIN', 'EMPLOYEE'],
+        depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'LOGISTICS', 'ENVIRONMENT', 'RESEARCH', 'MEDICAL', 'COMMUNICATION', 'OPERATIONS']
+      },
+      help: {
+        roles: ['ADMIN', 'EMPLOYEE'],
+        depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'LOGISTICS', 'ENVIRONMENT', 'RESEARCH', 'MEDICAL', 'COMMUNICATION', 'OPERATIONS']
+      },
+      settings: {
+        roles: ['ADMIN', 'EMPLOYEE'],
+        depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'LOGISTICS', 'ENVIRONMENT', 'RESEARCH', 'MEDICAL', 'COMMUNICATION', 'OPERATIONS']
+      },
 
-      // Command & Intelligence Routes
-      tracking: { roles: ['ADMIN', 'EMPLOYEE'], depts: ['ALL', 'LOGISTICS', 'OPERATIONS', 'RESEARCH', 'INFRASTRUCTURE', 'ENVIRONMENT'] },
-      liveTracking: { roles: ['ADMIN', 'EMPLOYEE'], depts: ['ALL', 'LOGISTICS', 'OPERATIONS', 'RESEARCH', 'INFRASTRUCTURE', 'ENVIRONMENT'] },
-      expeditions: { roles: ['ADMIN', 'EMPLOYEE'], depts: ['ALL', 'LOGISTICS', 'OPERATIONS', 'RESEARCH', 'INFRASTRUCTURE', 'ENVIRONMENT'] },
-      routeIntelligence: { roles: ['ADMIN', 'EMPLOYEE'], depts: ['ALL', 'LOGISTICS', 'OPERATIONS', 'RESEARCH', 'INFRASTRUCTURE', 'ENVIRONMENT'] },
+      tracking: {
+        roles: ['ADMIN', 'EMPLOYEE'],
+        depts: ['ALL', 'LOGISTICS', 'OPERATIONS', 'RESEARCH', 'INFRASTRUCTURE', 'ENVIRONMENT']
+      },
+      liveTracking: {
+        roles: ['ADMIN', 'EMPLOYEE'],
+        depts: ['ALL', 'LOGISTICS', 'OPERATIONS', 'RESEARCH', 'INFRASTRUCTURE', 'ENVIRONMENT']
+      },
+      expeditions: {
+        roles: ['ADMIN', 'EMPLOYEE'],
+        depts: ['ALL', 'LOGISTICS', 'OPERATIONS', 'RESEARCH', 'INFRASTRUCTURE', 'ENVIRONMENT']
+      },
+      routeIntelligence: {
+        roles: ['ADMIN', 'EMPLOYEE'],
+        depts: ['ALL', 'LOGISTICS', 'OPERATIONS', 'RESEARCH', 'INFRASTRUCTURE', 'ENVIRONMENT']
+      },
 
-      // Department Specific Routes
-      energy: { roles: ['ADMIN'], depts: ['ALL', 'ENERGY'] },
-      logistics: { roles: ['ADMIN'], depts: ['ALL', 'LOGISTICS'] },
-      logisticsCommand: { roles: ['ADMIN'], depts: ['ALL', 'LOGISTICS'] },
-      infrastructure: { roles: ['ADMIN'], depts: ['ALL', 'INFRASTRUCTURE'] },
-      digitalTwin: { roles: ['ADMIN'], depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'OPERATIONS'] },
-      environment: { roles: ['ADMIN'], depts: ['ALL', 'ENVIRONMENT', 'RESEARCH'] },
-      envMonitoring: { roles: ['ADMIN'], depts: ['ALL', 'ENVIRONMENT', 'RESEARCH'] },
-      research: { roles: ['ADMIN'], depts: ['ALL', 'RESEARCH', 'ENVIRONMENT'] },
+      energy: {
+        roles: ['ADMIN'],
+        depts: ['ALL', 'ENERGY']
+      },
+      logistics: {
+        roles: ['ADMIN'],
+        depts: ['ALL', 'LOGISTICS']
+      },
+      logisticsCommand: {
+        roles: ['ADMIN'],
+        depts: ['ALL', 'LOGISTICS']
+      },
+      infrastructure: {
+        roles: ['ADMIN'],
+        depts: ['ALL', 'INFRASTRUCTURE']
+      },
+      digitalTwin: {
+        roles: ['ADMIN'],
+        depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'OPERATIONS']
+      },
+      environment: {
+        roles: ['ADMIN'],
+        depts: ['ALL', 'ENVIRONMENT', 'RESEARCH']
+      },
+      envMonitoring: {
+        roles: ['ADMIN'],
+        depts: ['ALL', 'ENVIRONMENT', 'RESEARCH']
+      },
+      research: {
+        roles: ['ADMIN'],
+        depts: ['ALL', 'RESEARCH', 'ENVIRONMENT']
+      },
 
-      // Operations & Resources
-      inventory: { roles: ['ADMIN'], depts: ['ALL', 'LOGISTICS', 'OPERATIONS'] },
-      maintenance: { roles: ['ADMIN'], depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'OPERATIONS'] },
-      alerts: { roles: ['ADMIN', 'EMPLOYEE'], depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'LOGISTICS', 'ENVIRONMENT', 'RESEARCH', 'OPERATIONS'] },
-      personnel: { roles: ['ADMIN'], depts: ['ALL', 'OPERATIONS'] },
-
-      // Admin Only Routes
-      roles: { roles: ['ADMIN'], depts: ['ALL'] },
-      reports: { roles: ['ADMIN', 'EMPLOYEE'], depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'LOGISTICS', 'ENVIRONMENT', 'RESEARCH', 'OPERATIONS'] }
+      inventory: {
+        roles: ['ADMIN'],
+        depts: ['ALL', 'LOGISTICS', 'OPERATIONS']
+      },
+      maintenance: {
+        roles: ['ADMIN'],
+        depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'OPERATIONS']
+      },
+      alerts: {
+        roles: ['ADMIN', 'EMPLOYEE'],
+        depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'LOGISTICS', 'ENVIRONMENT', 'RESEARCH', 'OPERATIONS']
+      },
+      personnel: {
+        roles: ['ADMIN'],
+        depts: ['ALL', 'OPERATIONS']
+      },
+      roles: {
+        roles: ['ADMIN'],
+        depts: ['ALL']
+      },
+      reports: {
+        roles: ['ADMIN', 'EMPLOYEE'],
+        depts: ['ALL', 'INFRASTRUCTURE', 'ENERGY', 'LOGISTICS', 'ENVIRONMENT', 'RESEARCH', 'OPERATIONS']
+      }
     };
 
-    // Attempt restoring session from local storage cache initially
     try {
-      const cached = localStorage.getItem('ao_user_session');
+      const cached = localStorage.getItem(SESSION_KEY);
+
       if (cached) {
         const parsed = JSON.parse(cached);
-        this.user = parsed.user;
-        this.token = parsed.token;
-        this.isAuthenticated = !!this.user;
+
+        this.user = parsed.user || null;
+        this.token = parsed.token || null;
+        this.isAuthenticated = !!this.user && !!this.token;
       }
     } catch {
-      // Storage access error or invalid JSON
+      this.clearSession();
     }
+  }
+
+  getAuthHeaders() {
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+
+    if (this.token) {
+      headers.Authorization = `Bearer ${this.token}`;
+    }
+
+    return headers;
+  }
+
+  async parseResponse(res) {
+    const contentType = res.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      return res.json();
+    }
+
+    const text = await res.text();
+
+    if (!res.ok) {
+      throw new Error(
+        `Server returned HTTP ${res.status}. Check the backend URL and API route.`
+      );
+    }
+
+    throw new Error(
+      'The server returned a non-JSON response. Check the backend API configuration.'
+    );
   }
 
   subscribe(callback) {
     this.subscribers.push(callback);
+
     return () => {
-      this.subscribers = this.subscribers.filter(cb => cb !== callback);
+      this.subscribers = this.subscribers.filter(
+        cb => cb !== callback
+      );
     };
   }
 
   notify() {
-    this.subscribers.forEach(cb => cb(this.user, this.isAuthenticated));
+    this.subscribers.forEach(callback => {
+      callback(this.user, this.isAuthenticated);
+    });
   }
 
   async restoreSession() {
-    try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (this.token) {
-        headers['Authorization'] = `Bearer ${this.token}`;
-      }
+    if (!this.token) {
+      this.clearSession();
+      return null;
+    }
 
-      const res = await fetch('/api/auth/me', {
-        headers,
+    try {
+      const res = await apiFetch('/api/auth/me', {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
         credentials: 'include'
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.user) {
-          this.user = data.user;
-          this.isAuthenticated = true;
-          this.persist();
-          this.notify();
-          return this.user;
-        }
+      const data = await this.parseResponse(res);
+
+      if (!res.ok || !data.success || !data.user) {
+        this.clearSession();
+        this.notify();
+        return null;
       }
-      this.clearSession();
-      return null;
-    } catch {
+
+      this.user = data.user;
+      this.isAuthenticated = true;
+
+      this.persist();
+      this.notify();
+
       return this.user;
+    } catch (error) {
+      console.error('Session restore failed:', error);
+      return null;
     }
   }
 
   async login(identifier, password) {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ identifier, password })
-    });
+    try {
+      const res = await apiFetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          identifier,
+          password
+        })
+      });
 
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      throw new Error(data.message || 'Login failed. Please check credentials.');
+      const data = await this.parseResponse(res);
+
+      if (!res.ok || !data.success) {
+        throw new Error(
+          data.message || 'Login failed. Please check your credentials.'
+        );
+      }
+
+      if (!data.user || !data.token) {
+        throw new Error('Login response did not include a user and token.');
+      }
+
+      this.user = data.user;
+      this.token = data.token;
+      this.isAuthenticated = true;
+
+      this.persist();
+      this.notify();
+
+      return this.user;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-
-    this.user = data.user;
-    this.token = data.token;
-    this.isAuthenticated = true;
-    this.persist();
-    this.notify();
-
-    return data.user;
   }
 
   async logout() {
     try {
-      await fetch('/api/auth/logout', {
+      await apiFetch('/api/auth/logout', {
         method: 'POST',
+        headers: this.getAuthHeaders(),
         credentials: 'include'
       });
-    } catch {
-      // Ignore network errors during logout
+    } catch (error) {
+      console.warn('Logout request failed:', error);
     }
 
     this.clearSession();
     this.notify();
   }
 
-  async updateProfile(data) {
-    const headers = { 'Content-Type': 'application/json' };
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
-
-    const res = await fetch('/api/auth/profile', {
+  async updateProfile(profileData) {
+    const res = await apiFetch('/api/auth/profile', {
       method: 'PATCH',
-      headers,
+      headers: this.getAuthHeaders(),
       credentials: 'include',
-      body: JSON.stringify(data)
+      body: JSON.stringify(profileData)
     });
 
-    const result = await res.json();
+    const result = await this.parseResponse(res);
+
     if (!res.ok || !result.success) {
       throw new Error(result.message || 'Failed to update profile.');
     }
 
     this.user = result.user;
+
     this.persist();
     this.notify();
-    return result.user;
+
+    return this.user;
   }
 
   persist() {
     try {
       if (this.user && this.token) {
-        localStorage.setItem('ao_user_session', JSON.stringify({
-          user: this.user,
-          token: this.token
-        }));
+        localStorage.setItem(
+          SESSION_KEY,
+          JSON.stringify({
+            user: this.user,
+            token: this.token
+          })
+        );
       }
-    } catch {
-      // Storage access error
+    } catch (error) {
+      console.error('Unable to save session:', error);
     }
   }
 
@@ -172,10 +294,11 @@ export class AuthService {
     this.user = null;
     this.token = null;
     this.isAuthenticated = false;
+
     try {
-      localStorage.removeItem('ao_user_session');
+      localStorage.removeItem(SESSION_KEY);
     } catch {
-      // Storage access error
+      // Storage may be unavailable.
     }
   }
 
@@ -186,32 +309,64 @@ export class AuthService {
 
   hasDepartment(dept) {
     if (!this.user) return false;
-    if (this.user.role === 'ADMIN' || this.user.department === 'ALL') return true;
+
+    if (
+      this.user.role === 'ADMIN' ||
+      this.user.department === 'ALL'
+    ) {
+      return true;
+    }
+
     return this.user.department === dept;
   }
 
   hasPermission(permissionKey) {
     if (!this.user) return false;
-    if (this.user.role === 'ADMIN' || (this.user.permissions && this.user.permissions.includes('admin.all'))) {
+
+    if (
+      this.user.role === 'ADMIN' ||
+      this.user.permissions?.includes('admin.all')
+    ) {
       return true;
     }
-    return Array.isArray(this.user.permissions) && this.user.permissions.includes(permissionKey);
+
+    return (
+      Array.isArray(this.user.permissions) &&
+      this.user.permissions.includes(permissionKey)
+    );
   }
 
   canAccessRoute(routeId) {
-    if (!this.isAuthenticated || !this.user) return false;
-    if (this.user.role === 'ADMIN' || this.user.department === 'ALL') return true;
-
-    const rule = this.routePermissions[routeId];
-    if (!rule) return true; // Default allow if not explicitly locked
-
-    // Check role condition
-    if (rule.roles && !rule.roles.includes(this.user.role)) {
+    if (!this.isAuthenticated || !this.user) {
       return false;
     }
 
-    // Check department condition
-    if (rule.depts && !rule.depts.includes(this.user.department) && !rule.depts.includes('ALL')) {
+    if (
+      this.user.role === 'ADMIN' ||
+      this.user.department === 'ALL'
+    ) {
+      return true;
+    }
+
+    const rule = this.routePermissions[routeId];
+
+    // Unknown routes are denied by default.
+    if (!rule) {
+      return false;
+    }
+
+    if (
+      rule.roles &&
+      !rule.roles.includes(this.user.role)
+    ) {
+      return false;
+    }
+
+    if (
+      rule.depts &&
+      !rule.depts.includes(this.user.department) &&
+      !rule.depts.includes('ALL')
+    ) {
       return false;
     }
 
@@ -220,7 +375,10 @@ export class AuthService {
 
   getDefaultRoute() {
     if (!this.user) return 'dashboard';
-    if (this.user.role === 'ADMIN') return 'dashboard';
+
+    if (this.user.role === 'ADMIN') {
+      return 'dashboard';
+    }
 
     switch (this.user.department) {
       case 'ENERGY':
